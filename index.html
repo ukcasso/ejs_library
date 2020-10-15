@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>작은 도서관</title>
+    </head>
+    <style>
+        .dateSet {
+            width: 110px;
+            height: 16px;
+        }
+        #logo {
+            background-color: #5E6698;
+            width: 950px;
+            padding: 5px;
+        }
+        #search {
+            background-color: #5E6698;
+            width: 950px;
+            padding: 5px;
+        }
+        #table {
+            background-color: white;
+            width: 950px;
+            padding: 5px;
+            height: 275px;
+            overflow: auto;
+        }
+        #newBooks {
+            background-color: #5E6698;
+            width: 950px;
+            padding: 5px;
+        }
+        #searchInput {
+            width: 440px;
+        }
+        #searchBtn {
+            width: 100px;
+        }
+        #putBtn {
+            width: 400px;
+            height: 50px;
+        }
+        #title {
+            width: 495px;
+        }
+        #content {
+            width: 798px;
+            height: 100px;
+            resize: none;
+        }
+        table {
+            background-color: white;
+            width: 810px;
+            table-layout: fixed;
+            word-break: break-all;
+        }
+        tr {
+            background-color: white;
+            padding: 10px;
+            border: 0px solid black;
+        }
+        th {
+            padding: 10px;
+            border: 0px solid black;
+        }
+        td {
+            padding: 10px;
+            border: 0px solid black;
+            text-align: center;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        a {
+            color: black;
+            text-decoration: none;
+        }
+        a:hover {
+            color: rgb(74, 138, 211);
+        }
+    </style>
+    <body onload="init()">
+        <div id="library">
+            <center>
+                <div id="logo" style="color: white; font-size: 30px;"><br>
+                  <b>도서관리 프로그램</b>
+                  <br><br>
+                </div>
+            </center>
+            <center>
+                <div id="search">
+                    <center>
+                        <!--<b>서적 검색</b><br>-->
+                        <form action="/find" method="POST">
+                          <input type="text" id="searchInput" name="searchInput" placeholder="제목, 내용, 저자로 검색">
+                          <input class="dateSet" type="date" id="dateStart" name="dateStart">
+                          ~
+                          <input class="dateSet" type="date" id="dateEnd" name="dateEnd">
+                          <button id="searchBtn" type="submit">검색</button>
+                        </form>
+                    </center><br>
+                </div>
+            </center>
+            <center>
+                <div id="table">
+                    <!--<b>찾은 서적 목록</b><br>-->
+                    <center>
+                        <table>
+                            <thead>
+                                <tr><th>순번</th><th>제목</th><th>내용</th><th>저자</th><th>출간날짜</th><th>수정/삭제</th></tr>
+                            </thead>
+                            <tbody id="bTable">
+                              <%
+                              for(let i = 0; i < list.length; i++)
+                              {
+                              %>
+                              <tr>
+                                <td><%=i+1%></td>
+                                <td><a href="#" id='<%=list[i].id%>' onclick="popInfo(this.id, '<%=list[i].title%>', '<%=list[i].content%>', '<%=list[i].author%>', '<%=list[i].date%>')"><%=list[i].title%></a></td>
+                                <td><%=list[i].content%></td>
+                                <td><%=list[i].author%></td>
+                                <td><%=list[i].date%></td>
+                                <td>
+                                  <form name="frm" method="POST">
+                                  <button id="<%=list[i].id%>" type="submit" onclick='btnUrl(this.id ,"editBtn")' style="float:left">수정</button>                                  
+                                  <button id="<%=list[i].id%>" type="submit" onclick='btnUrl(this.id, "deleteBtn")' style="float:right">삭제</button>                                
+                                </td>
+                              </tr>
+                              <%
+                              }
+                              %>
+                              <%
+                              for(let j = 0; j < 5 - list.length; j++)
+                              {
+                              %>
+                              <tr>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                              </tr>
+                              <%
+                              }
+                              %>
+                            </tbody>
+                        </table>
+                    </center>    
+                </div>
+            </center>
+            <center>
+                <div id="newBooks">
+                    <center><br>
+                        <%
+                        if(list.length === 0) {
+                        %>
+                        <form name="frm" method="POST">
+                        <%
+                        }
+                        %>
+                        <!--<b>새로운 서적 등록</b><br>-->
+                          <input class="new" type="text" id="title" name="title" placeholder="제목" > 
+                          <input class="new" type="text" id="author" name="author" placeholder="저자" >
+                          <input class="dateSet" type="date" id="date" name="date" placeholder="출간날짜" ><br><br>
+                          <textarea type="text" id="content" name="content" placeholder="내용"></textarea><br><br>
+                          <button id="putBtn" type="submit" onclick = 'btnUrl(this.id ,"putBtn")'>등록</button>                          
+                        </form>
+                    </center><br>
+                </div>
+            </center>
+        </div>
+        <script>
+        function popInfo(id, title, content, author, date) {
+          console.log(id);
+          document.getElementById("title").value = title;
+          document.getElementById("content").value = content;
+          document.getElementById("author").value = author;
+          document.getElementById("date").value = date;
+        };
+
+        function btnUrl(id, btn) {
+          if(btn === "putBtn") {
+            frm.action = "/inputBook";
+          } else if(btn === "editBtn") {
+            frm.action = "/edit/" + id;
+          } else if(btn === "deleteBtn") {
+            frm.action = "/delete/" + id;
+            frm.method = "GET";
+          }
+        }
+        </script>
+    </body>
+</html>
